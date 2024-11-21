@@ -13,7 +13,7 @@
   "scripts": {
     "start": "node cli.mjs"
   },
-  "dependencies": {
+  "peerDependencies": {
     "inquirer": "^9.3.7",
     "rsp-libjscript": "github:ropsoft7/rsp-libjscript",
     "shelljs": "^0.8.5"
