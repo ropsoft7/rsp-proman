@@ -11,7 +11,8 @@
     "rsp.sys.proman": "src/bin/proman"
   },
   "scripts": {
-    "start": "node cli.mjs"
+    "start": "node cli.mjs",
+    "sync-install": "git add .; git commit -m sync; git push origin; sudo npm install -g https://github.com/ropsoft7/rsp-proman"
   },
   "peerDependencies": {
     "inquirer": "^9.3.7",
