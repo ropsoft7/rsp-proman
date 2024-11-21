@@ -1,0 +1,21 @@
+{
+  "name": "rsp.dev.sysProjMan",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CLI para gerenciamento de scripts e subprojetos",
+  "author": "@ropsoft",
+  "main": "bin/proman",
+  "bin":{
+    "proman": "src/bin/proman",
+    "rsp.proman": "src/bin/proman",
+    "rsp.sys.proman": "src/bin/proman"
+  },
+  "scripts": {
+    "start": "node cli.mjs"
+  },
+  "dependencies": {
+    "inquirer": "^9.3.7",
+    "rsp-libjscript": "github:ropsoft7/rsp-libjscript",
+    "shelljs": "^0.8.5"
+  }
+}

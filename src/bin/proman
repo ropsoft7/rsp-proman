@@ -1,0 +1,116 @@
+#!/bin/bash
+
+WRAPPER="`readlink -f "$0"`"
+HERE="`dirname "$WRAPPER"`"
+
+cd $HERE;
+
+cd ..;
+
+cd script;
+
+# Verifica se o PM2 está instalado
+if ! command -v pm2 &> /dev/null; then
+    echo "Erro: PM2 não está instalado. Por favor, instale-o primeiro."
+    exit 1
+fi
+
+# Função para exibir ajuda
+function show_help {
+    echo "Uso: $0 [comando]"
+    echo "Wrapper para gerenciar processos PM2 filtrados pelo namespace 'proman'."
+    echo
+    echo "Comandos disponíveis:"
+    echo "  list            Exibe a lista de processos no namespace 'proman'."
+    echo "  start <app>     Inicia uma aplicação no namespace 'proman'."
+    echo "  stop <app>      Para uma aplicação no namespace 'proman'."
+    echo "  restart <app>   Reinicia uma aplicação no namespace 'proman'."
+    echo "  delete <app>    Remove uma aplicação no namespace 'proman'."
+    echo "  logs [app]      Exibe logs (de um app específico ou de todos no namespace)."
+    echo "  help            Exibe esta mensagem de ajuda."
+}
+
+# Se nenhum argumento for fornecido, exibe a ajuda
+if [ $# -lt 1 ]; then
+    show_help
+    exit 1
+fi
+
+# Pega o comando principal e os argumentos subsequentes
+command=$1
+shift
+
+# Executa ações com base no comando fornecido
+case "$command" in
+    status)
+        pm2 status | grep "proman"
+    ;;
+    list)
+        sudo ./list.sh;
+        ##
+        ;;
+    start)
+
+        if [ $# -lt 1 ]; then
+            echo "Erro: nome da aplicação não especificado."
+            exit 1
+        fi
+
+        if [[ "$1" == "all" ]]; then
+            ./start-all.sh
+            exit;
+        fi
+        
+        SERVICED="/etc/proman/service"
+
+        if [[ -e "$SERVICED/$1" ]]; then
+            echo "SERVICED/1: " $SERVICED/$1
+            echo "O caminho $SERVICED/$1 existe."
+            pm2 stop "$1"
+            sleep 1
+            pm2 del "$1"
+            sleep 1;
+            pm2 start "$SERVICED/$1/start.sh" --max-memory-restart 45M --name $1 --namespace proman && pm2 save; 
+        else
+            echo "Erro: O caminho $SERVICED/$1 não existe."
+            exit 1
+        fi
+
+        ;;
+    stop)
+        if [ $# -lt 1 ]; then
+            echo "Erro: nome da aplicação não especificado."
+            exit 1
+        fi
+        pm2 stop "$1" --namespace proman && pm2 save $@;
+        ;;
+    restart)
+        if [ $# -lt 1 ]; then
+            echo "Erro: nome da aplicação não especificado."
+            exit 1
+        fi
+        pm2 restart "$1" --namespace proman && pm2 save $@;
+        ;;
+    delete)
+        if [ $# -lt 1 ]; then
+            echo "Erro: nome da aplicação não especificado."
+            exit 1
+        fi
+        pm2 delete "$1" --namespace proman && pm2 save $@;
+        ;;
+    logs)
+        if [ $# -lt 1 ]; then
+            pm2 logs --namespace proman && pm2 save $@;
+        else
+            pm2 logs "$1" --namespace proman && pm2 save $@;
+        fi
+        ;;
+    help)
+        show_help
+        ;;
+    *)
+        echo "Erro: comando desconhecido '$command'."
+        show_help
+        exit 1
+        ;;
+esac
